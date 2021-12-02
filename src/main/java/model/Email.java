@@ -14,7 +14,7 @@ public class Email {
     private String subject;
     private String text;
 
-    private Email() {}
+    private Email() {} //rende privato il costruttore di default
 
     /**
      * Costruttore della classe.
