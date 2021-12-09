@@ -7,7 +7,7 @@ public class CONSTANTS {
     public static String EMAILUPDATE = "EMAILUPDATE";
     public static String USERSFILEPATH = "users.csv";
     public static String EMAILSFILEPATH = "emails.csv";
-    public static String SERVERIP = "LOCAHOST";
+    public static String SERVERIP = "127.0.0.1";
     public static int SERVERPORT = 5555;
     public static String DISCONNECT = "QUIT";
     public static String NEWEMAIL = "NEWEMAIL";
