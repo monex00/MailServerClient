@@ -194,7 +194,7 @@ public class Client {
 
         }
 
-        //TODO: creare un sendMessage generico per comunicare con server
+        //TODO: creare un sendMessage generico per comunicare con  server
         private void sendMessageToServer(Message msg){
             try {
                 objectOutputStream.writeObject(msg);
