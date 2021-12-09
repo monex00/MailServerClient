@@ -1,14 +1,21 @@
 package com.client;
 
+import com.Email;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.MouseEvent;
-import model.*;
+import com.model.*;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Classe Controller 
@@ -28,10 +35,10 @@ public class ClientController {
     private Label lblUsername;
 
     @FXML
-    private TextArea txtEmailContent;
+    private TextArea txtEmailContent; //contenuto email sulla destra
 
     @FXML
-    private ListView<Email> lstEmails;
+    private ListView<Email> lstEmails; //lista di email sulla sinistra
 
     private Client model;
     private Email selectedEmail;
@@ -42,9 +49,8 @@ public class ClientController {
         if (this.model != null)
             throw new IllegalStateException("Model can only be initialized once");
         //istanza nuovo client
-        model = new Client("mickeymouse@disney.com");
-        model.generateRandomEmails(10);
-
+        model = new Client("a@gmail.com");
+        model.updateEmails();
         selectedEmail = null;
 
         //binding tra lstEmails e inboxProperty
@@ -52,10 +58,11 @@ public class ClientController {
         lstEmails.setOnMouseClicked(this::showSelectedEmail);
         lblUsername.textProperty().bind(model.emailAddressProperty());
 
-        emptyEmail = new Email("", List.of(""), "", "");
-
+        emptyEmail = new Email("", new ArrayList<>(), "", "");
         updateDetailView(emptyEmail);
+
     }
+
 
     /**
      * Elimina la mail selezionata
@@ -64,6 +71,16 @@ public class ClientController {
     protected void onDeleteButtonClick() {
         model.deleteEmail(selectedEmail);
         updateDetailView(emptyEmail);
+    }
+
+    //Gestione chiusura window
+    public void setStage(Stage stage){
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent windowEvent) {
+                model.close();
+            }
+        });
     }
 
      /**
@@ -84,7 +101,7 @@ public class ClientController {
             lblFrom.setText(email.getSender());
             lblTo.setText(String.join(", ", email.getReceivers()));
             lblSubject.setText(email.getSubject());
-            txtEmailContent.setText(email.getText());
+            txtEmailContent.setText(email.getMessage());
         }
     }
 

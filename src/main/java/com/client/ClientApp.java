@@ -1,5 +1,6 @@
 package com.client;
 
+import com.server.ClientHandler;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -15,11 +16,17 @@ public class ClientApp extends Application {
 
         URL clientUrl = ClientApp.class.getResource("client.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(clientUrl);
+
         Scene scene = new Scene(fxmlLoader.load(), 900, 600);
         stage.setTitle("MyMail");
         stage.setScene(scene);
         stage.show();
+
+        ClientController controller = fxmlLoader.getController();
+        controller.setStage(stage); //passo lo stage al controller per poter gestirne la CloseRequest della window
+
     }
+
 
     public static void main(String[] args) {
         launch();
