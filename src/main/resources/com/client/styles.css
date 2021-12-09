@@ -1,0 +1,17 @@
+
+.main{
+    -fx-background-image: url(images/background.jpg);
+    -fx-background-position: center center;
+    -fx-background-size: cover;
+
+}
+
+.title{
+    -fx-text-fill: #fff;
+    -fx-font-size: 26px;
+    -fx-font-family: SignPainter;
+}
+
+.image{
+    -fx-opacity: 0.6;
+}
