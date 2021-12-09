@@ -49,7 +49,7 @@ public class ClientController {
         if (this.model != null)
             throw new IllegalStateException("Model can only be initialized once");
         //istanza nuovo client
-        model = new Client("a@gmail.com"); // Devo creare la schermata
+        model = new Client("a@gmail.com");
         model.updateEmails();
         selectedEmail = null;
 

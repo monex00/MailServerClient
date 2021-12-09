@@ -14,15 +14,16 @@ public class ClientApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
 
-        URL clientUrl = ClientApp.class.getResource("client.fxml");
+        URL clientUrl = ClientApp.class.getResource("account.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(clientUrl);
 
         Scene scene = new Scene(fxmlLoader.load(), 900, 600);
         stage.setTitle("MyMail");
         stage.setScene(scene);
+        stage.setResizable(false);
         stage.show();
 
-        ClientController controller = fxmlLoader.getController();
+        LoginController controller = fxmlLoader.getController();
         controller.setStage(stage); //passo lo stage al controller per poter gestirne la CloseRequest della window
 
     }

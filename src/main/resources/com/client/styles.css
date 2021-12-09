@@ -3,15 +3,19 @@
     -fx-background-image: url(images/background.jpg);
     -fx-background-position: center center;
     -fx-background-size: cover;
-
 }
 
 .title{
     -fx-text-fill: #fff;
-    -fx-font-size: 26px;
+    -fx-font-size: 31px;
     -fx-font-family: SignPainter;
 }
 
 .image{
-    -fx-opacity: 0.6;
+    -fx-opacity: 0.5;
+}
+
+.button{
+    -fx-background-color : #666666;
+    -fx-background-radius: 15px;
 }
