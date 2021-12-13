@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
@@ -15,20 +16,20 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="543.0" prefWidth="722.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.client.ClientController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="543.0" prefWidth="722.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.client.ClientController">
    <center>
-      <SplitPane dividerPositions="0.36785119378123265" prefHeight="638.0" prefWidth="595.0" BorderPane.alignment="CENTER">
+      <SplitPane dividerPositions="0.36785119378123265" prefHeight="638.0" prefWidth="595.0" styleClass="mailBackgroundPrimary" stylesheets="@styles.css" BorderPane.alignment="CENTER">
          <items>
-            <BorderPane fx:id="pnlEmailList" prefHeight="200.0" prefWidth="200.0">
+            <BorderPane fx:id="pnlEmailList" prefHeight="200.0" prefWidth="200.0" styleClass="mailBackgroundPrimary" stylesheets="@styles.css">
                <top>
-                  <HBox prefHeight="54.0" prefWidth="262.0" BorderPane.alignment="CENTER">
+                  <HBox prefHeight="54.0" prefWidth="262.0" styleClass="mailBackgroundPrimary" stylesheets="@styles.css" BorderPane.alignment="CENTER">
                      <children>
                         <ImageView fx:id="imgIcon" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@images/account_icon.png" />
                            </image>
                         </ImageView>
-                        <Label fx:id="lblUsername" prefHeight="54.0" prefWidth="215.0" text="Label">
+                        <Label fx:id="lblUsername" prefHeight="54.0" prefWidth="215.0" styleClass="mailText" stylesheets="@styles.css" text="Label">
                            <HBox.margin>
                               <Insets left="20.0" />
                            </HBox.margin>
@@ -40,14 +41,21 @@
                   </HBox>
                </top>
                <center>
-                  <ListView fx:id="lstEmails" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                  <ListView fx:id="lstEmails" prefHeight="200.0" prefWidth="200.0" styleClass="mailListView" stylesheets="@styles.css" BorderPane.alignment="CENTER" />
                </center>
+               <bottom>
+                  <Button mnemonicParsing="false" styleClass="mailButton" stylesheets="@styles.css" text="New Email" BorderPane.alignment="CENTER">
+                     <BorderPane.margin>
+                        <Insets bottom="8.0" top="8.0" />
+                     </BorderPane.margin>
+                  </Button>
+               </bottom>
             </BorderPane>
-            <StackPane prefHeight="150.0" prefWidth="200.0">
+            <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="mailBackgroundPrimary" stylesheets="@styles.css">
                <children>
-                  <BorderPane fx:id="pnlReadMessage" prefHeight="200.0" prefWidth="200.0">
+                  <BorderPane fx:id="pnlReadMessage" prefHeight="200.0" prefWidth="200.0" styleClass="mailBackgroundPrimary" stylesheets="@styles.css">
                      <top>
-                        <GridPane BorderPane.alignment="CENTER">
+                        <GridPane styleClass="mailText" stylesheets="@styles.css" BorderPane.alignment="CENTER">
                           <columnConstraints>
                             <ColumnConstraints hgrow="SOMETIMES" maxWidth="221.2000732421875" minWidth="10.0" prefWidth="90.4000244140625" />
                             <ColumnConstraints hgrow="SOMETIMES" maxWidth="389.199951171875" minWidth="10.0" prefWidth="362.3999755859375" />
@@ -58,12 +66,12 @@
                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                           </rowConstraints>
                            <children>
-                              <Label text="From" />
-                              <Label text="To" GridPane.rowIndex="1" />
-                              <Label text="Subject" GridPane.rowIndex="2" />
-                              <Label fx:id="lblFrom" text="Label" GridPane.columnIndex="1" />
-                              <Label fx:id="lblTo" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                              <Label fx:id="lblSubject" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <Label styleClass="mailText" stylesheets="@styles.css" text="From" />
+                              <Label styleClass="mailText" stylesheets="@styles.css" text="To" GridPane.rowIndex="1" />
+                              <Label styleClass="mailText" stylesheets="@styles.css" text="Subject" GridPane.rowIndex="2" />
+                              <Label fx:id="lblFrom" styleClass="mailText" stylesheets="@styles.css" text="Label" GridPane.columnIndex="1" />
+                              <Label fx:id="lblTo" styleClass="mailText" stylesheets="@styles.css" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Label fx:id="lblSubject" styleClass="mailText" stylesheets="@styles.css" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                            </children>
                            <padding>
                               <Insets left="12.0" right="12.0" />
@@ -71,10 +79,34 @@
                         </GridPane>
                      </top>
                      <center>
-                        <TextArea fx:id="txtEmailContent" editable="false" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+                        <TextArea fx:id="txtEmailContent" editable="false" prefHeight="200.0" prefWidth="200.0" stylesheets="@styles.css" BorderPane.alignment="CENTER">
+                           <styleClass>
+                              <String fx:value="mailBackgroundPrimary" />
+                              <String fx:value="mailText" />
+                           </styleClass></TextArea>
                      </center>
                      <bottom>
-                        <Button fx:id="btnDelete" mnemonicParsing="false" onMouseClicked="#onDeleteButtonClick" text="Delete" BorderPane.alignment="CENTER" />
+                        <GridPane BorderPane.alignment="CENTER">
+                           <BorderPane.margin>
+                              <Insets bottom="8.0" top="8.0" />
+                           </BorderPane.margin>
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <Button fx:id="btnDelete" alignment="CENTER" mnemonicParsing="false" onMouseClicked="#onDeleteButtonClick" style="-fx-background-color: #802944#802944;" stylesheets="@styles.css" text="Delete" GridPane.halignment="CENTER">
+                                 <styleClass>
+                                    <String fx:value="mailButton" />
+                                    <String fx:value="mailText" />
+                                 </styleClass>
+                              </Button>
+                              <Button mnemonicParsing="false" styleClass="mailButton" stylesheets="@styles.css" text="Reply" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+                           </children>
+                        </GridPane>
                      </bottom>
                   </BorderPane>
                </children>
@@ -82,4 +114,8 @@
          </items>
       </SplitPane>
    </center>
+   <styleClass>
+      <String fx:value="main" />
+      <String fx:value="mailBackgroundPrimary" />
+   </styleClass>
 </BorderPane>

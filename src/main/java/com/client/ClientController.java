@@ -36,6 +36,7 @@ public class ClientController {
     @FXML
     private Label lblUsername;
 
+
     @FXML
     private TextArea txtEmailContent; //contenuto email sulla destra
 
