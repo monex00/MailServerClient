@@ -1,6 +1,7 @@
 package com.client;
 
 import com.Email;
+import com.client.StartClient;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -14,57 +15,20 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class LoginController {
     private String clientEmailAddress="";
 
     @FXML
-    private ImageView alice_img;
-
-    @FXML
-    private ImageView bob_img;
-
-    @FXML
-    private ImageView charlie_img;
+    private Button btnLogin; // TODO: nascondere il bottone se non è selezionato nessun utente
 
     private ImageView imgPrevious=null;
+
     public void initialize(){
 
-        /*
-        alice_img = new ImageView(new Image(ClientApp.class.getResource("images/alice.png").toExternalForm()));
-        bob_img = new ImageView(new Image(ClientApp.class.getResource("images/bob.png").toExternalForm()));
-        charlie_img = new ImageView(new Image(ClientApp.class.getResource("images/charlie.png").toExternalForm()));
-
-        alice_img.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                updateClientMail(alice_img, "a@gmail.com");
-            }
-        });
-        bob_img.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                updateClientMail(bob_img, "b@gmail.com");
-            }
-        });
-        charlie_img.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                updateClientMail(charlie_img, "c@gmail.com");
-            }
-        });
-    */
     }
-
-    /*
-    public void updateClientMail(ImageView v, String s) {
-        System.out.println("CLICK");
-        resetOpacity();
-        v.setOpacity(1);
-        clientEmailAddress = s;
-    }
-    */
 
     @FXML
     private void updateClientMail(MouseEvent event)
@@ -88,8 +52,11 @@ public class LoginController {
     }
 
     @FXML
-    public void login() {
-        makeAlert("Login Completed!", "Welcome", clientEmailAddress);
+    public void login() throws IOException {
+        //makeAlert("Login Completed!", "Welcome", clientEmailAddress);
+        StartClient client = new StartClient();
+        client.setEmailAddress(clientEmailAddress);
+        client.start(new Stage());
     }
 
     public void makeAlert(String title, String head, String text){

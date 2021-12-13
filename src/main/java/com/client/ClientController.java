@@ -22,6 +22,8 @@ import java.util.ArrayList;
  */
 
 public class ClientController {
+
+    private String emailAddress;
     @FXML
     private Label lblFrom;
 
@@ -44,22 +46,34 @@ public class ClientController {
     private Email selectedEmail;
     private Email emptyEmail;
 
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
     @FXML
     public void initialize(){
-        if (this.model != null)
-            throw new IllegalStateException("Model can only be initialized once");
-        //istanza nuovo client
-        model = new Client("a@gmail.com");
-        model.updateEmails();
-        selectedEmail = null;
 
-        //binding tra lstEmails e inboxProperty
-        lstEmails.itemsProperty().bind(model.inboxProperty());
-        lstEmails.setOnMouseClicked(this::showSelectedEmail);
-        lblUsername.textProperty().bind(model.emailAddressProperty());
+        Platform.runLater(() -> { // Bisogna metterlo per evitare che la mail sia nulla
+            if (this.model != null)
+                throw new IllegalStateException("Model can only be initialized once");
+            //istanza nuovo client
+            model = new Client(emailAddress);
+            model.updateEmails();
+            selectedEmail = null;
 
-        emptyEmail = new Email("", new ArrayList<>(), "", "");
-        updateDetailView(emptyEmail);
+            //binding tra lstEmails e inboxProperty
+            lstEmails.itemsProperty().bind(model.inboxProperty());
+            lstEmails.setOnMouseClicked(this::showSelectedEmail);
+            lblUsername.textProperty().bind(model.emailAddressProperty());
+
+            emptyEmail = new Email("", new ArrayList<>(), "", "");
+            updateDetailView(emptyEmail);
+        });
+
 
     }
 
