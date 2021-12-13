@@ -8,6 +8,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import com.model.*;
 import javafx.stage.Stage;
@@ -36,6 +38,8 @@ public class ClientController {
     @FXML
     private Label lblUsername;
 
+    @FXML
+    private ImageView imgIcon;
 
     @FXML
     private TextArea txtEmailContent; //contenuto email sulla destra
@@ -65,7 +69,14 @@ public class ClientController {
             model = new Client(emailAddress);
             model.updateEmails();
             selectedEmail = null;
-
+            String imgName = "alice.png";
+            if(emailAddress.equals("b@gmail.com")){
+                imgName="bob.png";
+            }if(emailAddress.equals("c@gmail.com")){
+                imgName="charlie.png";
+            }
+            Image image = new Image(getClass().getResource("images/"+imgName).toExternalForm());
+            imgIcon.setImage(image);
             //binding tra lstEmails e inboxProperty
             lstEmails.itemsProperty().bind(model.inboxProperty());
             lstEmails.setOnMouseClicked(this::showSelectedEmail);
