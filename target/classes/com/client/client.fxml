@@ -85,7 +85,7 @@
                      <center>
                         <TextArea fx:id="txtEmailContent" editable="false" prefHeight="200.0" prefWidth="200.0" stylesheets="@styles.css" BorderPane.alignment="CENTER">
                            <styleClass>
-                              <String fx:value="list-view" />
+                              <String fx:value="text-area" />
                               <String fx:value="mailText" />
                            </styleClass></TextArea>
                      </center>
