@@ -38,8 +38,8 @@ public class LoginController {
             imgPrevious = imgClicked;
         }
         resetOpacity(imgClicked);
-        imgClicked.setOpacity(1);
         clientEmailAddress = getEmails(imgClicked.getId());
+        imgPrevious = imgClicked;
     }
 
     private String getEmails(String id) {
@@ -71,9 +71,9 @@ public class LoginController {
         });
     }
 
-    private void resetOpacity(ImageView imgCurrent){
-        imgCurrent.setOpacity(0.5);
+    private void resetOpacity(ImageView imgClicked){
         imgPrevious.setOpacity(0.5);
+        imgClicked.setOpacity(1);
     }
 
 
