@@ -5,9 +5,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -99,6 +97,16 @@ public class ClientController {
         updateDetailView(emptyEmail);
     }
 
+    @FXML
+    protected void onReplyButtonClick() {
+        makeAlert("reply", "reply", "reply");
+    }
+
+    @FXML
+    protected void onNewButtonClick() {
+        makeAlert("new", "new", "new");
+    }
+
     //Gestione chiusura window
     public void setStage(Stage stage){
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -129,6 +137,18 @@ public class ClientController {
             lblSubject.setText(email.getSubject());
             txtEmailContent.setText(email.getMessage());
         }
+    }
+
+    public void makeAlert(String title, String head, String text){
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(head);
+        alert.setContentText(text);
+        alert.showAndWait().ifPresent(rs -> {
+            if (rs == ButtonType.OK) {
+                System.out.println("Pressed OK.");
+            }
+        });
     }
 
 }

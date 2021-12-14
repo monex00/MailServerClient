@@ -21,19 +21,32 @@
 }
 
 .mailBackgroundPrimary{
-    -fx-background-color :  #242129;
+    -fx-background-color :  #2A2438;
 }
 
 .mailText{
-    -fx-text-fill: #fff;
+    -fx-text-fill: #DBD8E3;
+    -fx-font-size: 16px;
 }
 
-.mailListView{
-    -fx-background-color :  #242129;
+.list-view {
+    -fx-control-inner-background: #DBD8E3 ;
+    -fx-control-inner-background-alt: derive(-fx-control-inner-background, 60%);
+    -fx-text-fill: #2A2438;
 }
 
 .mailButton{
-    -fx-background-color :  #fff;
     -fx-label-padding: 8px;
     -fx-margin: 10px;
+    -fx-font-size: 16px;
+}
+
+.normalButton{
+    -fx-background-color :  #DBD8E3;
+    -fx-text-fill: #2A2438;
+}
+
+.deleteButton{
+    -fx-background-color :   #802944;
+    -fx-text-fill:  #DBD8E3;
 }
