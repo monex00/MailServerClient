@@ -15,6 +15,7 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -78,7 +79,7 @@ public class ClientController {
             //binding tra lstEmails e inboxProperty
             lstEmails.itemsProperty().bind(model.inboxProperty());
             lstEmails.setOnMouseClicked(this::showSelectedEmail);
-            lblUsername.textProperty().bind(model.emailAddressProperty());
+            lblUsername.setText(emailAddress);
 
             emptyEmail = new Email("", new ArrayList<>(), "", "");
             updateDetailView(emptyEmail);
@@ -103,8 +104,10 @@ public class ClientController {
     }
 
     @FXML
-    protected void onNewButtonClick() {
-        makeAlert("new", "new", "new");
+    protected void onNewButtonClick() throws IOException {
+        StartNew nm = new StartNew();
+        nm.setEmailAddress(emailAddress);
+        nm.start(new Stage());
     }
 
     //Gestione chiusura window
