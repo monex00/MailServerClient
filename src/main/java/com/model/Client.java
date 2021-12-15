@@ -42,6 +42,7 @@ public class Client {
         this.emailAddress = new SimpleStringProperty(emailAddress);
 
         clientSocket = new ClientSocket();
+
         getEmails();
     }
 
