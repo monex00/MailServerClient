@@ -1,0 +1,57 @@
+
+.main{
+    -fx-background-image: url(images/back01.png);
+    -fx-background-position: center center;
+    -fx-background-size: cover;
+}
+
+.title{
+    -fx-text-fill: #fff;
+    -fx-font-size: 31px;
+    -fx-font-family: SignPainter;
+}
+
+.image{
+    -fx-opacity: 0.5;
+}
+
+.button{
+    -fx-background-color : #666666;
+    -fx-background-radius: 15px;
+}
+
+.mailBackgroundPrimary{
+    -fx-background-color :  #222832;
+}
+
+.mailText{
+    -fx-text-fill: #EEEEEE;
+    -fx-font-size: 16px;
+}
+
+.list-view {
+    -fx-control-inner-background: #393E46 ;
+    -fx-control-inner-background-alt: derive(-fx-control-inner-background, 60%);
+    -fx-text-fill: #EEEEEE;
+}
+
+.text-area {
+    -fx-control-inner-background: #393E46 ;
+    -fx-text-fill: #EEEEEE;
+}
+
+.mailButton{
+    -fx-label-padding: 8px;
+    -fx-margin: 10px;
+    -fx-font-size: 16px;
+}
+
+.normalButton{
+    -fx-background-color :  #EEEEEE;
+    -fx-text-fill: #222832;
+}
+
+.deleteButton{
+    -fx-background-color :   #802944;
+    -fx-text-fill:  #EEEEEE;
+}

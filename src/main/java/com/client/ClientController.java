@@ -5,9 +5,9 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import com.model.*;
 import javafx.stage.Stage;
@@ -15,6 +15,7 @@ import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -22,6 +23,8 @@ import java.util.ArrayList;
  */
 
 public class ClientController {
+
+    private String emailAddress;
     @FXML
     private Label lblFrom;
 
@@ -35,6 +38,9 @@ public class ClientController {
     private Label lblUsername;
 
     @FXML
+    private ImageView imgIcon;
+
+    @FXML
     private TextArea txtEmailContent; //contenuto email sulla destra
 
     @FXML
@@ -44,22 +50,41 @@ public class ClientController {
     private Email selectedEmail;
     private Email emptyEmail;
 
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
     @FXML
     public void initialize(){
-        if (this.model != null)
-            throw new IllegalStateException("Model can only be initialized once");
-        //istanza nuovo client
-        model = new Client("a@gmail.com"); // Devo creare la schermata
-        model.updateEmails();
-        selectedEmail = null;
 
-        //binding tra lstEmails e inboxProperty
-        lstEmails.itemsProperty().bind(model.inboxProperty());
-        lstEmails.setOnMouseClicked(this::showSelectedEmail);
-        lblUsername.textProperty().bind(model.emailAddressProperty());
+        Platform.runLater(() -> { // Bisogna metterlo per evitare che la mail sia nulla
+            if (this.model != null)
+                throw new IllegalStateException("Model can only be initialized once");
+            //istanza nuovo client
+            model = new Client(emailAddress);
+            model.updateEmails();
+            selectedEmail = null;
+            String imgName = "alice.png";
+            if(emailAddress.equals("b@gmail.com")){
+                imgName="bob.png";
+            }if(emailAddress.equals("c@gmail.com")){
+                imgName="charlie.png";
+            }
+            Image image = new Image(getClass().getResource("images/"+imgName).toExternalForm());
+            imgIcon.setImage(image);
+            //binding tra lstEmails e inboxProperty
+            lstEmails.itemsProperty().bind(model.inboxProperty());
+            lstEmails.setOnMouseClicked(this::showSelectedEmail);
+            lblUsername.setText(emailAddress);
 
-        emptyEmail = new Email("", new ArrayList<>(), "", "");
-        updateDetailView(emptyEmail);
+            emptyEmail = new Email("", new ArrayList<>(), "", "");
+            updateDetailView(emptyEmail);
+        });
+
 
     }
 
@@ -71,6 +96,18 @@ public class ClientController {
     protected void onDeleteButtonClick() {
         model.deleteEmail(selectedEmail);
         updateDetailView(emptyEmail);
+    }
+
+    @FXML
+    protected void onReplyButtonClick() {
+        makeAlert("reply", "reply", "reply");
+    }
+
+    @FXML
+    protected void onNewButtonClick() throws IOException {
+        StartNew nm = new StartNew();
+        nm.setEmailAddress(emailAddress);
+        nm.start(new Stage());
     }
 
     //Gestione chiusura window
@@ -103,6 +140,18 @@ public class ClientController {
             lblSubject.setText(email.getSubject());
             txtEmailContent.setText(email.getMessage());
         }
+    }
+
+    public void makeAlert(String title, String head, String text){
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(head);
+        alert.setContentText(text);
+        alert.showAndWait().ifPresent(rs -> {
+            if (rs == ButtonType.OK) {
+                System.out.println("Pressed OK.");
+            }
+        });
     }
 
 }
