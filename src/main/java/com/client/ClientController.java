@@ -66,7 +66,6 @@ public class ClientController {
                 throw new IllegalStateException("Model can only be initialized once");
             //istanza nuovo client
             model = new Client(emailAddress);
-            model.updateEmails();
             selectedEmail = null;
             String imgName = "alice.png";
             if(emailAddress.equals("b@gmail.com")){

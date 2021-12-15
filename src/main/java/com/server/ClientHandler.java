@@ -20,8 +20,6 @@ public class ClientHandler implements Runnable {
     private ManageUsers manageUsers = null;
     private ManageEmails manageEmails = null;
 
-    private boolean done = false;
-
     public ClientHandler(Socket socket,ManageUsers manageUsers,ManageEmails manageEmails) {
         try {
             this.socket = socket;
@@ -53,7 +51,7 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         Message message;
-        while(!done){
+        while(!socket.isClosed() && socket.isConnected()){
             try {
                 message = (Message) objectInputStream.readObject();
                 checkMessage(message);
@@ -113,7 +111,7 @@ public class ClientHandler implements Runnable {
     public void closeConn(Socket socket, ObjectInputStream objectInputStream, ObjectOutputStream objectOutputStream){
         removeClientHandler();
         try {
-            done = true; //TODO: chiedere socket.close();
+            socket.close();
             if(objectInputStream != null) objectInputStream.close();
             if( objectOutputStream != null) objectOutputStream.close();
         }catch (IOException e){

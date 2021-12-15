@@ -1,18 +1,18 @@
 package com;
 
 public class CONSTANTS {
-    public static String GETEMAILS = "GETEMAILS";
-    public static String MESSAGE = "MESSAGE";
-    public static String EMAIL = "EMAIL";
-    public static String EMAILUPDATE = "EMAILUPDATE";
-    public static String USERSFILEPATH = "users.csv";
-    public static String EMAILSFILEPATH = "emails.csv";
-    public static String SERVERIP = "127.0.0.1";
-    public static int SERVERPORT = 5555;
-    public static String DISCONNECT = "QUIT";
-    public static String NEWEMAIL = "NEWEMAIL";
-    public static String NEWEMAILTEXT = "Hai ricevuto una nuova E-mail";
-    public static String RECEIVERNOTFOUND = "RECEIVERNOTFOUND";
-    public static String RECEIVERNOTFOUNDTEXT = "Non è stato possibile trovare uno dei destinatri!";
-    public static String DELETEEMAIL = "DELETEEMAIL";
+    public static final String GETEMAILS = "GETEMAILS";
+    public static final String MESSAGE = "MESSAGE";
+    public static final String EMAIL = "EMAIL";
+    public static final String EMAILUPDATE = "EMAILUPDATE";
+    public static final String USERSFILEPATH = "users.csv";
+    public static final String EMAILSFILEPATH = "emails.csv";
+    public static final String SERVERIP = "LOCAHOST";
+    public static final int SERVERPORT = 5555;
+    public static final String DISCONNECT = "QUIT";
+    public static final String NEWEMAIL = "NEWEMAIL";
+    public static final String NEWEMAILTEXT = "Hai ricevuto una nuova E-mail";
+    public static final String RECEIVERNOTFOUND = "RECEIVERNOTFOUND";
+    public static final String RECEIVERNOTFOUNDTEXT = "Non è stato possibile trovare uno dei destinatri!";
+    public static final String DELETEEMAIL = "DELETEEMAIL";
 }

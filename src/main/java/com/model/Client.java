@@ -10,7 +10,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -43,6 +42,7 @@ public class Client {
         this.emailAddress = new SimpleStringProperty(emailAddress);
 
         clientSocket = new ClientSocket();
+        getEmails();
     }
 
     /**
@@ -64,37 +64,12 @@ public class Client {
      */
     public void deleteEmail(Email email) {
         inboxContent.remove(email);
-        clientSocket.deleteEmailFromServer(email);
+        clientSocket.sendMessageToServer(new Message(CONSTANTS.DELETEEMAIL,email.getId() + ""));
     }
 
-    /**
-     * genera email random da aggiungere alla lista di email, ese verranno mostrate nella ui
-     */
-    /*
-    public void generateRandomEmails(int n) {
-        String[] people = new String[] {"Paolo", "Alessandro", "Enrico", "Giulia", "Gaia", "Simone"};
-        String[] subjects = new String[] {
-                "Importante", "A proposito della nostra ultima conversazione", "Tanto va la gatta al lardo",
-                "Non dimenticare...", "Domani scuola" };
-        String[] texts = new String[] {
-                "È necessario che ci parliamo di persona, per mail rischiamo sempre fraintendimenti",
-                "Ricordati di comprare il latte tornando a casa",
-                "L'appuntamento è per domani alle 9, ci vediamo al solito posto",
-                "Ho sempre pensato valesse 42, tu sai di cosa parlo"
-        };
-        Random r = new Random();
-        for (int i=0; i<n; i++) {
-            Email email = new Email(
-                    people[r.nextInt(people.length)],
-                    List.of(people[r.nextInt(people.length)]),
-                    subjects[r.nextInt(subjects.length)],
-                    texts[r.nextInt(texts.length)]);
-            inboxContent.add(email);
-        }
-    }
-    */
-    public void updateEmails() {
-        clientSocket.getEmailsFromServer();
+    public void getEmails() {
+        inboxContent.clear(); //clear email list
+        clientSocket.sendMessageToServer(new Message(CONSTANTS.GETEMAILS, ""));
     }
 
     public void setEmails(ArrayList<Email> emails){
@@ -107,126 +82,106 @@ public class Client {
     }
 
 
-
     public void close(){
-        clientSocket.closeConn();
+        clientSocket.sendMessageToServer(new Message(CONSTANTS.DISCONNECT,""));
     }
 
 
     private class ClientSocket {
         private ObjectOutputStream objectOutputStream;
         private ObjectInputStream objectInputStream;
-        private Socket socket;
+        private Socket socket = null;
 
         public ClientSocket() {
             try {
                 socket = new Socket(CONSTANTS.SERVERIP, CONSTANTS.SERVERPORT);
+                logOnServer();
+            } catch (IOException e) {
+                reconnect();
+            }
+        }
+
+        public void logOnServer(){
+            try {
                 objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                 objectInputStream = new ObjectInputStream(socket.getInputStream());
 
                 objectOutputStream.writeObject(new Message(CONSTANTS.MESSAGE, emailAddress.getValue(), null));
                 objectOutputStream.flush();
+                listenForMessage(); //TODO: aggiungere risposta server per sincronizzare il listenForMessage()
 
-                listenForMessage();
             } catch (IOException e) {
-                e.printStackTrace();
+                reconnect();
             }
         }
 
-        public ArrayList<Email> getEmailsFromServer() {
-            Message message = null;
-            try {
-                objectOutputStream.writeObject(new Message(CONSTANTS.GETEMAILS, ""));
-                objectOutputStream.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-
-        public void deleteEmailFromServer(Email email) {
-            try {
-                objectOutputStream.writeObject(new Message(CONSTANTS.DELETEEMAIL,email.getId() + ""));
-                objectOutputStream.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
 
         public void listenForMessage(){
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("ok");
+            new Thread(() -> {
+                while(isConnected()){
+                    try {
+                        final Message message = (Message) objectInputStream.readObject(); //TODO: controllare final
+                        String type = message.getMessageType();
+                        switch (type){
+                            case CONSTANTS.GETEMAILS -> Platform.runLater( () -> setEmails(message.getEms() ));
+                            case CONSTANTS.NEWEMAIL -> Platform.runLater( () -> inboxContent.add(message.getEmail())); //TODO: pop-up
+                            case CONSTANTS.DISCONNECT -> closeConnection();
+                        }
+                    }catch(IOException | ClassNotFoundException e) {
+                        reconnect();
+                        break;
+                    }
+                }
+            }).start();
+        }
 
-                    while(socket.isConnected()){
+        public void reconnect() {
+            closeConnection();
+            new Thread(() -> {
+                while(!isConnected()){
+                    try {
+                        socket = new Socket(CONSTANTS.SERVERIP, CONSTANTS.SERVERPORT);
+                        logOnServer();
+                        Platform.runLater( () ->getEmails());
+                    } catch (IOException ex) {
                         try {
-                            final Message message = (Message) objectInputStream.readObject();
-                            System.out.println(message.toString());
-
-                            if (message.getMessageType().equals(CONSTANTS.GETEMAILS)) {
-                                Platform.runLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        setEmails(message.getEms());
-                                    }
-                                });
-                            }else if(message.getMessageType().equals(CONSTANTS.NEWEMAIL)){
-                                Platform.runLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        inboxContent.add(message.getEmail()); //TODO: pop-up
-                                    }
-                                });
-                            }else if(message.getMessageType().equals(CONSTANTS.DISCONNECT)){
-                                killClient();
-                                break;
-                            }
-                        }catch(IOException | ClassNotFoundException e) {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
                             e.printStackTrace();
-                            killClient();
-                            break;
                         }
                     }
                 }
             }).start();
-
         }
 
-        //TODO: creare un sendMessage generico per comunicare con  server
-        private void sendMessageToServer(Message msg){
-            try {
-                objectOutputStream.writeObject(msg);
-                objectOutputStream.flush();
-            }catch (IOException e){
-                e.printStackTrace();
+        public void sendMessageToServer(Message msg){
+            if(isConnected() && msg != null){
+                try {
+                    objectOutputStream.writeObject(msg);
+                    objectOutputStream.flush();
+                }catch (IOException e){
+                    reconnect();
+                }
             }
         }
 
-        //TODO: refactoring del codice
-        private void closeConn() {
-            try {
-                objectOutputStream.writeObject(new Message(CONSTANTS.DISCONNECT,""));
-                objectOutputStream.flush();
-            }catch (IOException e){
-                e.printStackTrace();
-            }
-        }
-
-        private void killClient(){
+        public void closeConnection(){
             if(socket != null) {
                 try {
-                    socket.close();
                     if(objectInputStream != null) objectInputStream.close();
                     if(objectOutputStream != null) objectOutputStream.close();
+                    socket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-
         }
 
+        private boolean isConnected(){
+            if (socket != null && socket.isConnected() && !socket.isClosed())
+                return true;
+            return false;
+        }
 
     }
 
