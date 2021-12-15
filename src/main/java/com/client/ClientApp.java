@@ -25,7 +25,6 @@ public class ClientApp extends Application {
 
         LoginController controller = fxmlLoader.getController();
         controller.setStage(stage); //passo lo stage al controller per poter gestirne la CloseRequest della window
-
     }
 
 

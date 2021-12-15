@@ -81,7 +81,7 @@ public class LoginController {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
-
+                System.exit(0);
             }
         });
     }

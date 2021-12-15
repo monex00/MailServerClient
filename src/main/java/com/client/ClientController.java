@@ -60,7 +60,6 @@ public class ClientController {
 
     @FXML
     public void initialize(){
-
         Platform.runLater(() -> { // Bisogna metterlo per evitare che la mail sia nulla
             if (this.model != null)
                 throw new IllegalStateException("Model can only be initialized once");
