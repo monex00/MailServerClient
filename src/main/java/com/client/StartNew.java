@@ -1,6 +1,6 @@
 package com.client;
 
-import com.server.ClientHandler;
+import com.model.ClientModel;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -11,12 +11,20 @@ import java.net.URL;
 
 public class StartNew extends Application {
 
-    String emailAddress;
+    ClientModel model;
     @Override
     public void start(Stage stage) throws IOException {
+        if(model == null) {
+            System.out.println("can't start");
+            return;
+        }
 
         URL clientUrl = ClientApp.class.getResource("send.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(clientUrl);
+
+        //creating a controller instance manually to setting attributes before loading the fxml
+        SendController controller = new SendController(model, stage);
+        fxmlLoader.setController(controller);
 
         Scene scene = new Scene(fxmlLoader.load(), 400, 600);
         stage.setTitle("New Email");
@@ -24,21 +32,7 @@ public class StartNew extends Application {
         stage.setResizable(false);
         stage.show();
 
-        SendController controller = fxmlLoader.getController();
-        controller.setEmailAddress(emailAddress);
-        controller.setStage(stage); //passo lo stage al controller per poter gestirne la CloseRequest della window
-
     }
 
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
-    public static void main(String[] args) {
-        launch();
-    }
+    public void setModel(ClientModel model) {this.model = model;}
 }

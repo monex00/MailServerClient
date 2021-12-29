@@ -84,16 +84,23 @@ public class ManageEmails {
         }
     }
 
-    public ArrayList<Email> getReceivedMyEmails(String email){
+    public ArrayList<Email> getEmails(String email, boolean includeSent){
         ArrayList<Email> ems = new ArrayList<>();
         for (Email e:
              this.emails) {
-            if(e.getReceivers().contains(email)){
-                ems.add(e);
+            if(includeSent){
+                if(e.getReceivers().contains(email) || e.getSender().equals(email)){
+                    ems.add(e);
+                }
+            }else {
+                if(e.getReceivers().contains(email)){
+                    ems.add(e);
+                }
             }
         }
         return ems;
     }
+
 
     public int findEmailById(long id){
         for (int i = 0; i < this.emails.size(); i++)

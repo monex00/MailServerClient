@@ -9,7 +9,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
-
+//TODO: chiedere a @harry di sistemare il file csv che crasha con testi con virgole e a capo al sui interno
 public class ClientHandler implements Runnable {
     public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
 
@@ -78,7 +78,7 @@ public class ClientHandler implements Runnable {
         }else if(message.getMessageType().equalsIgnoreCase(CONSTANTS.EMAILUPDATE)){
             //do stuff
         }else if(message.getMessageType().equalsIgnoreCase(CONSTANTS.GETEMAILS)){
-            sendMessage(new Message(CONSTANTS.GETEMAILS, manageEmails.getReceivedMyEmails(this.email)),objectOutputStream);
+            sendMessage(new Message(CONSTANTS.GETEMAILS, manageEmails.getEmails(email, true)),objectOutputStream);
         }else if(message.getMessageType().equalsIgnoreCase(CONSTANTS.DELETEEMAIL)){
             this.manageEmails.deleteEmail(message.getMessage(),this.email);
         }else if(message.getMessageType().equalsIgnoreCase(CONSTANTS.DISCONNECT)){

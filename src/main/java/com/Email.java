@@ -114,6 +114,11 @@ public class Email implements Serializable {
 
         return this.sender + ": " + this.subject.toUpperCase() + "\n" + this.message.substring(0, this.message.length() - 3) + " " + this.date.split("T")[0];
     }
+
+    public static boolean isValid(String email) {
+        String regex = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
+        return email.matches(regex);
+    }
 }
 
 /*

@@ -1,20 +1,12 @@
 package com.client;
 
 import com.Email;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.InputEvent;
-import javafx.scene.input.MouseEvent;
-import com.model.*;
+import com.model.ClientModel;
 import javafx.stage.Stage;
-import javafx.stage.Window;
-import javafx.stage.WindowEvent;
+
 
 import java.io.IOException;
 
@@ -23,8 +15,6 @@ import java.io.IOException;
  */
 
 public class SendController {
-
-    private String emailAddress;
 
     @FXML
     private Label lblAddress;
@@ -38,52 +28,54 @@ public class SendController {
     @FXML
     private TextField txtTo;
 
-    public String getEmailAddress() {
-        return emailAddress;
-    }
+    private final ClientModel model;
+    private final Stage stage;
 
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
+    public SendController(ClientModel model, Stage stage){
+        this.model = model;
+        this.stage = stage;
     }
 
     @FXML
     public void initialize(){
-        Platform.runLater(() -> { // Bisogna metterlo per evitare che la mail sia nulla
-            lblAddress.setText(emailAddress);
-        });
+        lblAddress.textProperty().bind(model.emailAddressProperty());
     }
 
-    public void makeAlert(String title, String head, String text){
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    public Alert makeAlert(String title, String head, String text, Alert.AlertType type){
+        Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(head);
         alert.setContentText(text);
-        alert.showAndWait().ifPresent(rs -> {
-            if (rs == ButtonType.OK) {
-                System.out.println("Pressed OK.");
-            }
-        });
+        alert.showAndWait();
+        return alert;
     }
 
     @FXML
     protected void onBackButtonClick(InputEvent e) {
-        makeAlert("Are you sure?", "You wat to close?", "Really?");
-        closeWindow(e);
+        Alert alert = makeAlert("Are you sure?", "You want to close?", "Really?", Alert.AlertType.CONFIRMATION);
+        if(alert.getResult() == ButtonType.OK) {
+            stage.close();
+        }
     }
 
     @FXML
     protected void onSendButtonClick(InputEvent e) {
-        makeAlert(txtSubject.getText(), "To : "+txtTo.getText(), txtMessage.getText());
-        closeWindow(e);
+        String to = txtTo.getText();
+        //check if the email is valid
+        if(!Email.isValid(to)){
+            makeAlert("Error", "Invalid email", "Please insert a valid email", Alert.AlertType.ERROR);
+        }else{
+            Alert alert = makeAlert("Are you sure?", "You want to send this email?", "Really?", Alert.AlertType.CONFIRMATION);
+
+            //if the user confirms the sending
+            if(alert.getResult() == ButtonType.OK){
+                model.receiversProperty().bind(txtTo.textProperty());
+                model.subjectProperty().bind(txtSubject.textProperty());
+                model.textProperty().bind(txtMessage.textProperty());
+                model.sendEmail();
+                stage.close();
+            }
+        }
     }
 
-    private void closeWindow(InputEvent e){
-        final Node source = (Node) e.getSource();
-        final Stage stage = (Stage) source.getScene().getWindow();
-        stage.close();
-    }
-
-    public void setStage(Stage stage) {
-
-    }
 }

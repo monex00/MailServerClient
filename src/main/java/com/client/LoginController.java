@@ -20,25 +20,32 @@ import java.util.ArrayList;
 
 public class LoginController {
     private String clientEmailAddress="";
+    private String clientPng="";
 
     @FXML
-    private Button btnLogin; // TODO: nascondere il bottone se non è selezionato nessun utente
+    private Button btnLogin;
+
 
     private ImageView imgPrevious=null;
 
+    @FXML
     public void initialize(){
-
+        btnLogin.setDisable(true);
     }
 
     @FXML
     private void updateClientMail(MouseEvent event)
     {
         ImageView imgClicked = ((ImageView) event.getSource()); //yields complete string
+
+        btnLogin.setDisable(false);
+
         if(imgPrevious == null){
             imgPrevious = imgClicked;
         }
         resetOpacity(imgClicked);
         clientEmailAddress = getEmails(imgClicked.getId());
+        clientPng = imgClicked.getId().replace("_img", ".png");
         imgPrevious = imgClicked;
     }
 
@@ -56,6 +63,7 @@ public class LoginController {
         //makeAlert("Login Completed!", "Welcome", clientEmailAddress);
         StartClient client = new StartClient();
         client.setEmailAddress(clientEmailAddress);
+        client.setImgPath(clientPng);
         client.start(new Stage());
     }
 

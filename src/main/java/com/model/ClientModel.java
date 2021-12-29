@@ -4,28 +4,42 @@ import com.CONSTANTS;
 import com.Email;
 import com.Message;
 import javafx.application.Platform;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
+import javafx.beans.value.ObservableStringValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.paint.Paint;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 
 /**
  * Classe Client, conterrà la lista di mail che sarà il com.model
  */
 
-public class Client {
+public class ClientModel {
     private final ListProperty<Email> inbox;
     private final ObservableList<Email> inboxContent;
     private final StringProperty emailAddress;
+
+    //send property
+    private final StringProperty receivers;
+    private final StringProperty subject;
+    private final StringProperty text;
+
+    //alert property
+    private final StringProperty alertContent;
+
+    //status property
+    private final StringProperty statusText;
+    private final ObjectProperty<Paint> statusColor;
+
 
     private ClientSocket clientSocket;
 
@@ -34,15 +48,26 @@ public class Client {
      *
      * @param emailAddress indirizzo email
      */
-
-    public Client(String emailAddress) {
+    //TODO: FARE CONTROLLI
+    public ClientModel(String emailAddress) {
         this.inboxContent = FXCollections.observableList(new LinkedList<>());
         this.inbox = new SimpleListProperty<>();
         this.inbox.set(inboxContent);
         this.emailAddress = new SimpleStringProperty(emailAddress);
 
-        clientSocket = new ClientSocket();
+        //send property
+        receivers = new SimpleStringProperty();
+        text = new SimpleStringProperty();
+        subject = new SimpleStringProperty();
 
+        //alert property
+        alertContent = new SimpleStringProperty();
+
+        //status property
+        statusText  = new SimpleStringProperty("Online");
+        statusColor = new SimpleObjectProperty<>(Paint.valueOf("#00ff00"));
+
+        clientSocket = new ClientSocket();
         getEmails();
     }
 
@@ -59,6 +84,19 @@ public class Client {
     public StringProperty emailAddressProperty() {
         return emailAddress;
     }
+
+    public StringProperty alertProperty(){ return alertContent; }
+
+    public StringProperty receiversProperty(){ return receivers;}
+
+    public StringProperty textProperty(){ return text;}
+
+    public StringProperty subjectProperty(){ return subject;}
+
+    public StringProperty statusTextProperty(){ return statusText;}
+
+    public ObjectProperty<Paint> statusColorProperty(){ return statusColor;}
+
 
     /**
      * @return elimina l'email specificata
@@ -82,16 +120,29 @@ public class Client {
         }
     }
 
+    public void sendEmail(){
+        String[] re = this.receivers.getValue().split(";");
+        ArrayList<String> r = new ArrayList<>(Arrays.asList(re));
+        String email = this.emailAddress.getValue();
+        String sub = this.subject.getValue();
+        String text = this.text.getValue();
+        clientSocket.sendMessageToServer(new Message(CONSTANTS.EMAIL, "", new Email(email, r ,sub, text)));
+    }
+
+    public ClientSocket getClientSocket() {
+        return clientSocket;
+    }
 
     public void close(){
         clientSocket.sendMessageToServer(new Message(CONSTANTS.DISCONNECT,""));
     }
 
 
-    private class ClientSocket {
+    public class ClientSocket {
         private ObjectOutputStream objectOutputStream;
         private ObjectInputStream objectInputStream;
         private Socket socket = null;
+
 
         public ClientSocket() {
             try {
@@ -109,7 +160,7 @@ public class Client {
 
                 objectOutputStream.writeObject(new Message(CONSTANTS.MESSAGE, emailAddress.getValue(), null));
                 objectOutputStream.flush();
-                listenForMessage(); //TODO: aggiungere risposta server per sincronizzare il listenForMessage()
+                listenForMessage();
 
             } catch (IOException e) {
                 reconnect();
@@ -122,13 +173,15 @@ public class Client {
                 while(isConnected()){
                     try {
                         final Message message = (Message) objectInputStream.readObject(); //TODO: controllare final
-                        String type = message.getMessageType();
-                        switch (type){
-                            case CONSTANTS.GETEMAILS -> Platform.runLater( () -> setEmails(message.getEms() ));
-                            case CONSTANTS.NEWEMAIL -> Platform.runLater( () -> inboxContent.add(message.getEmail())); //TODO: pop-up
+                        switch (message.getMessageType()){
+                            case CONSTANTS.GETEMAILS -> Platform.runLater( () -> setEmails(message.getEms()));
+                            case CONSTANTS.NEWEMAIL -> Platform.runLater( () ->{
+                                inboxContent.add(message.getEmail());
+                                alertContent.set("new Email from: " + message.getEmail().getSender());
+                            });
                             case CONSTANTS.DISCONNECT -> closeConnection();
                         }
-                    }catch(IOException | ClassNotFoundException e) {
+                    } catch(IOException | ClassNotFoundException e) {
                         reconnect();
                         break;
                     }
@@ -142,11 +195,24 @@ public class Client {
                 while(!isConnected()){
                     try {
                         socket = new Socket(CONSTANTS.SERVERIP, CONSTANTS.SERVERPORT);
+                        Platform.runLater(() -> {
+                            alertContent.set("Riconnessione riuscita");
+                            statusColor.set(Paint.valueOf("#00ff00"));
+                            statusText.set("Online");
+                        });
                         logOnServer();
-                        Platform.runLater( () ->getEmails());
+                        Platform.runLater( () -> getEmails());
                     } catch (IOException ex) {
+                        if(alertContent.getValue() == null || !alertContent.getValue().equals("Connessione al server non riuscita")) {
+                            Platform.runLater(() -> {
+                                alertContent.set("Connessione al server non riuscita");
+                                statusColor.set(Paint.valueOf("#ff0000"));
+                                statusText.set("Offline");
+                            });
+                        }
+
                         try {
-                            Thread.sleep(5000);
+                            Thread.sleep(1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -160,14 +226,14 @@ public class Client {
                 try {
                     objectOutputStream.writeObject(msg);
                     objectOutputStream.flush();
-                }catch (IOException e){
+                } catch (IOException e){
                     reconnect();
                 }
             }
         }
 
         public void closeConnection(){
-            if(socket != null) {
+            if(isConnected()) {
                 try {
                     if(objectInputStream != null) objectInputStream.close();
                     if(objectOutputStream != null) objectOutputStream.close();
