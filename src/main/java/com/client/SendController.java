@@ -52,7 +52,7 @@ public class SendController {
 
     @FXML
     protected void onBackButtonClick(InputEvent e) {
-        Alert alert = makeAlert("Are you sure?", "You want to close?", "Really?", Alert.AlertType.CONFIRMATION);
+        Alert alert = makeAlert("Are you sure?", "Do you want to close?", "The email will be deleted", Alert.AlertType.CONFIRMATION);
         if(alert.getResult() == ButtonType.OK) {
             stage.close();
         }
@@ -65,7 +65,7 @@ public class SendController {
         if(!Email.isValid(to)){
             makeAlert("Error", "Invalid email", "Please insert a valid email", Alert.AlertType.ERROR);
         }else{
-            Alert alert = makeAlert("Are you sure?", "You want to send this email?", "Really?", Alert.AlertType.CONFIRMATION);
+            Alert alert = makeAlert("Are you sure?", "Do you want to send this email?", "After sending you will not be able to undo this operation", Alert.AlertType.CONFIRMATION);
 
             //if the user confirms the sending
             if(alert.getResult() == ButtonType.OK){

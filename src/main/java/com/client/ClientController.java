@@ -51,10 +51,10 @@ public class ClientController {
     private ImageView imgIcon;
 
     @FXML
-    private TextArea txtEmailContent; //contenuto email sulla destra
+    private TextArea txtEmailContent;
 
     @FXML
-    private ListView<Email> lstEmails; //lista di email sulla sinistra
+    private ListView<Email> lstEmails;
 
     @FXML
     private Label lblStatus;
@@ -79,6 +79,7 @@ public class ClientController {
     public void initialize(){
         if( model != null){ throw new IllegalStateException("Model can only be initialized once"); }
         model = new ClientModel(emailAddress);
+        model.getEmails();
 
         //checking if the image exists
         if(imgPath != null) {
@@ -89,7 +90,7 @@ public class ClientController {
             imgIcon.setImage(new Image(getClass().getResource("images/account_icon.png").toString()));
         }
 
-        // status properties
+        //status properties
         cleStatus.fillProperty().bind(model.statusColorProperty());
         lblStatus.textProperty().bind(model.statusTextProperty());
 
@@ -203,12 +204,11 @@ public class ClientController {
         popup.setX(stage.getX() + stage.getWidth()/2 - popup.getWidth()/2);
         popup.setY(stage.getY() + stage.getHeight()/2 - popup.getHeight()/2);
 
-        //TODO: rivedere questa parte
         if(stage.isFocused() && !popup.isShowing()){
             popup.show(stage);
         }
 
-        //Hide del pop-up dopo due secondi
+        //Hide del pop-up dopo 3 secondi
         new Timeline(new KeyFrame(
                 Duration.millis(3000),
                 new EventHandler<ActionEvent>() {
@@ -217,8 +217,6 @@ public class ClientController {
                         popup.hide();
                     }
                 })).play();
-
-
     }
 
     public void makeAlert(String title, String head, String text){

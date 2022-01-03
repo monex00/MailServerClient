@@ -5,7 +5,6 @@ import com.Email;
 import com.Message;
 import javafx.application.Platform;
 import javafx.beans.property.*;
-import javafx.beans.value.ObservableStringValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Paint;
@@ -16,7 +15,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 
 /**
@@ -34,20 +32,14 @@ public class ClientModel {
     private final StringProperty text;
 
     //alert property
-    private final StringProperty alertContent;
+    private final StringProperty popupProperty;
 
     //status property
     private final StringProperty statusText;
     private final ObjectProperty<Paint> statusColor;
 
+    private final ClientSocket clientSocket;
 
-    private ClientSocket clientSocket;
-
-    /**
-     * Costruttore della classe.
-     *
-     * @param emailAddress indirizzo email
-     */
     //TODO: FARE CONTROLLI
     public ClientModel(String emailAddress) {
         this.inboxContent = FXCollections.observableList(new LinkedList<>());
@@ -61,31 +53,26 @@ public class ClientModel {
         subject = new SimpleStringProperty();
 
         //alert property
-        alertContent = new SimpleStringProperty();
+        popupProperty = new SimpleStringProperty();
 
         //status property
         statusText  = new SimpleStringProperty("Online");
         statusColor = new SimpleObjectProperty<>(Paint.valueOf("#00ff00"));
 
         clientSocket = new ClientSocket();
-        getEmails();
+
     }
 
-    /**
-     * @return lista di email
-     */
+
     public ListProperty<Email> inboxProperty() {
         return inbox;
     }
 
-    /**
-     * @return indirizzo email della casella postale
-     */
     public StringProperty emailAddressProperty() {
         return emailAddress;
     }
 
-    public StringProperty alertProperty(){ return alertContent; }
+    public StringProperty alertProperty(){ return popupProperty; }
 
     public StringProperty receiversProperty(){ return receivers;}
 
@@ -97,20 +84,30 @@ public class ClientModel {
 
     public ObjectProperty<Paint> statusColorProperty(){ return statusColor;}
 
+    public ClientSocket getClientSocket() {
+        return clientSocket;
+    }
+
 
     /**
-     * @return elimina l'email specificata
-     */
+    * Delete email from the list and send to server to delete it
+    */
     public void deleteEmail(Email email) {
         inboxContent.remove(email);
         clientSocket.sendMessageToServer(new Message(CONSTANTS.DELETEEMAIL,email.getId() + ""));
     }
 
+    /**
+     * Get emails from server
+     */
     public void getEmails() {
         inboxContent.clear(); //clear email list
         clientSocket.sendMessageToServer(new Message(CONSTANTS.GETEMAILS, ""));
     }
 
+    /**
+     * Add emails to the list
+     */
     public void setEmails(ArrayList<Email> emails){
         if(emails != null){
             for (Email email : emails) {
@@ -120,6 +117,9 @@ public class ClientModel {
         }
     }
 
+    /**
+     * Get email fields from the properties and send to server to add it
+     */
     public void sendEmail(){
         String[] re = this.receivers.getValue().split(";");
         ArrayList<String> r = new ArrayList<>(Arrays.asList(re));
@@ -129,15 +129,17 @@ public class ClientModel {
         clientSocket.sendMessageToServer(new Message(CONSTANTS.EMAIL, "", new Email(email, r ,sub, text)));
     }
 
-    public ClientSocket getClientSocket() {
-        return clientSocket;
-    }
 
+    /**
+     * Close connection with server
+     */
     public void close(){
         clientSocket.sendMessageToServer(new Message(CONSTANTS.DISCONNECT,""));
     }
 
-
+    /**
+     * Inner class ClientSocket, used to communicate with server
+     */
     public class ClientSocket {
         private ObjectOutputStream objectOutputStream;
         private ObjectInputStream objectInputStream;
@@ -146,13 +148,21 @@ public class ClientModel {
 
         public ClientSocket() {
             try {
-                socket = new Socket(CONSTANTS.SERVERIP, CONSTANTS.SERVERPORT);
-                logOnServer();
+                connectionSeq();
             } catch (IOException e) {
-                reconnect();
+               reconnect();
             }
         }
 
+        public void connectionSeq() throws IOException {
+            socket = new Socket(CONSTANTS.SERVERIP, CONSTANTS.SERVERPORT);
+            logOnServer();
+            listenForMessage();
+        }
+
+        /**
+         * Send the email address to the server to initialize the connection
+         */
         public void logOnServer(){
             try {
                 objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -160,14 +170,17 @@ public class ClientModel {
 
                 objectOutputStream.writeObject(new Message(CONSTANTS.MESSAGE, emailAddress.getValue(), null));
                 objectOutputStream.flush();
-                listenForMessage();
-
             } catch (IOException e) {
                 reconnect();
             }
         }
 
-
+        /**
+         * A Thread that Listen for message from server
+         *  if the message is a getEmail message, it will add the emails to the list
+         *  if the message is a new email, add it to the list and notify the user with popup
+         *  if the message is a disconnect message, close the connection
+         */
         public void listenForMessage(){
             new Thread(() -> {
                 while(isConnected()){
@@ -175,9 +188,9 @@ public class ClientModel {
                         final Message message = (Message) objectInputStream.readObject(); //TODO: controllare final
                         switch (message.getMessageType()){
                             case CONSTANTS.GETEMAILS -> Platform.runLater( () -> setEmails(message.getEms()));
-                            case CONSTANTS.NEWEMAIL -> Platform.runLater( () ->{
+                            case CONSTANTS.NEWEMAIL -> Platform.runLater( () -> {
                                 inboxContent.add(message.getEmail());
-                                alertContent.set("new Email from: " + message.getEmail().getSender());
+                                popupProperty.set(CONSTANTS.NEWEMAILTEXT +  message.getEmail().getSender());
                             });
                             case CONSTANTS.DISCONNECT -> closeConnection();
                         }
@@ -189,30 +202,33 @@ public class ClientModel {
             }).start();
         }
 
+        /**
+         * a Thread that try to reconnect to the server every 5 seconds
+         *  if the connection is established, it will popup a message to the user
+         */
         public void reconnect() {
             closeConnection();
             new Thread(() -> {
                 while(!isConnected()){
                     try {
-                        socket = new Socket(CONSTANTS.SERVERIP, CONSTANTS.SERVERPORT);
+                        connectionSeq();
                         Platform.runLater(() -> {
-                            alertContent.set("Riconnessione riuscita");
-                            statusColor.set(Paint.valueOf("#00ff00"));
+                            popupProperty.set(CONSTANTS.CONNESSIONSUCCESSTEXT);
+                            statusColor.set(Paint.valueOf(CONSTANTS.GREEN));
                             statusText.set("Online");
+                            getEmails();
                         });
-                        logOnServer();
-                        Platform.runLater( () -> getEmails());
                     } catch (IOException ex) {
-                        if(alertContent.getValue() == null || !alertContent.getValue().equals("Connessione al server non riuscita")) {
+                        if(popupProperty.getValue() == null || !popupProperty.getValue().equals(CONSTANTS.CONNESSIONERRORTEXT)) {
                             Platform.runLater(() -> {
-                                alertContent.set("Connessione al server non riuscita");
-                                statusColor.set(Paint.valueOf("#ff0000"));
+                                popupProperty.set(CONSTANTS.CONNESSIONERRORTEXT);
+                                statusColor.set(Paint.valueOf(CONSTANTS.RED));
                                 statusText.set("Offline");
                             });
                         }
 
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(5000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -221,6 +237,9 @@ public class ClientModel {
             }).start();
         }
 
+        /**
+         * Send mesage to the server
+         */
         public void sendMessageToServer(Message msg){
             if(isConnected() && msg != null){
                 try {
@@ -232,6 +251,9 @@ public class ClientModel {
             }
         }
 
+        /**
+         * Close the connection
+         */
         public void closeConnection(){
             if(isConnected()) {
                 try {
@@ -244,6 +266,9 @@ public class ClientModel {
             }
         }
 
+        /**
+         * Check if the connection is established
+         */
         private boolean isConnected(){
             if (socket != null && socket.isConnected() && !socket.isClosed())
                 return true;
