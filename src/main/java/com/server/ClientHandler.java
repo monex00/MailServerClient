@@ -2,16 +2,19 @@ package com.server;
 
 import com.CONSTANTS;
 import com.Message;
+import javafx.beans.property.StringProperty;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
-//TODO: chiedere a @harry di sistemare il file csv che crasha con testi con virgole e a capo al sui interno
+
 public class ClientHandler implements Runnable {
-    public static ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
+    public static final ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
 
     private Socket socket = null;
     private ObjectOutputStream objectOutputStream = null;
@@ -20,25 +23,50 @@ public class ClientHandler implements Runnable {
     private ManageUsers manageUsers = null;
     private ManageEmails manageEmails = null;
 
-    public ClientHandler(Socket socket,ManageUsers manageUsers,ManageEmails manageEmails) {
+    private StringProperty logProperty;
+
+
+    public ClientHandler(Socket socket, ManageUsers manageUsers, ManageEmails manageEmails, StringProperty logProperty) {
         try {
             this.socket = socket;
             objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             objectInputStream = new ObjectInputStream(socket.getInputStream());
 
+            synchronized (clientHandlers) {
+                if (clientHandlers.size() == CONSTANTS.MAXSOCKETS) {
+                    clientHandlers.get(0).closeConn();
+                }
+            }
+
+            this.logProperty = logProperty;
+
             this.email = ((Message)objectInputStream.readObject()).getMessage();
-            System.out.println("EMAIL: " + this.email);
             clientHandlers.add(this);
             this.manageUsers = manageUsers;
             this.manageEmails = manageEmails;
             checkEmailIfNotExistAdd();
-            System.out.println("Added user with "+ this.email +" to clientHandlers");
+            logProperty.set(logProperty.get() + "ADDED USER: " + this.email + " TO CLIENTHANDLERS\n");
+            System.out.println("ADDED USER: " + this.email + " TO CLIENTHANDLERS");
+
         }catch (IOException | ClassNotFoundException e){
             System.out.println("ECCEZIONE");
             System.out.println(e.toString() + " " + e.getMessage());
-            closeConn(socket,objectInputStream,objectOutputStream);
+            closeConn();
 
         }
+    }
+
+    public Timer disconnectUserIfNoActivity(){
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                sendMessage(new Message(CONSTANTS.DISCONNECT,""));
+                closeConn();
+                timer.cancel();
+            }
+        },  10000);
+        return timer;
     }
 
     private void checkEmailIfNotExistAdd() {
@@ -51,13 +79,14 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         Message message;
-        while(!socket.isClosed() && socket.isConnected()){
+        while(isConnected()){
             try {
+                Timer t = disconnectUserIfNoActivity();
                 message = (Message) objectInputStream.readObject();
+                t.cancel();
                 checkMessage(message);
             }catch(IOException | ClassNotFoundException e) {
-                System.out.println(socket.isConnected());
-                closeConn(socket,objectInputStream,objectOutputStream);
+                closeConn();
                 break;
             }
         }
@@ -69,26 +98,27 @@ public class ClientHandler implements Runnable {
         }else if(message.getMessageType().equalsIgnoreCase(CONSTANTS.EMAIL)){
             if(this.manageEmails.isReceiverInSystem(message.getEmail())){
                 this.manageEmails.addEmail(message.getEmail());
-                this.manageEmails.addEmailToFile(message.getEmail());
+                this.manageEmails.addEmailToFile(); //rimuovere aggiunta manuale e mettere un timer
                 notifyUserNewEmailReceived(message);
                 //notify sender email sent
+                sendMessage(new Message(CONSTANTS.EMAILSENT,CONSTANTS.EMAILSENTTEXT));
             }else{
                 notifySenderReceiverNotFound();
             }
         }else if(message.getMessageType().equalsIgnoreCase(CONSTANTS.EMAILUPDATE)){
             //do stuff
         }else if(message.getMessageType().equalsIgnoreCase(CONSTANTS.GETEMAILS)){
-            sendMessage(new Message(CONSTANTS.GETEMAILS, manageEmails.getEmails(email, true)),objectOutputStream);
+            sendMessage(new Message(CONSTANTS.GETEMAILS, manageEmails.getReceivedMyEmails(this.email)));
         }else if(message.getMessageType().equalsIgnoreCase(CONSTANTS.DELETEEMAIL)){
             this.manageEmails.deleteEmail(message.getMessage(),this.email);
         }else if(message.getMessageType().equalsIgnoreCase(CONSTANTS.DISCONNECT)){
-            sendMessage(new Message(CONSTANTS.DISCONNECT,""), objectOutputStream);
-            closeConn(socket,objectInputStream,objectOutputStream);
+            sendMessage(new Message(CONSTANTS.DISCONNECT,""));
+            closeConn();
         }
     }
 
     private void notifySenderReceiverNotFound() {
-        sendMessage(new Message(CONSTANTS.RECEIVERNOTFOUND,CONSTANTS.RECEIVERNOTFOUNDTEXT),this.objectOutputStream);
+        sendMessage(new Message(CONSTANTS.RECEIVERNOTFOUND,CONSTANTS.RECEIVERNOTFOUNDTEXT));
     }
 
     private void notifyUserNewEmailReceived(Message message) {
@@ -97,34 +127,39 @@ public class ClientHandler implements Runnable {
                 strings) {
             for (int i = 0; i < clientHandlers.size(); i++) {
                 if(email.equals(clientHandlers.get(i).email)){
-                    sendMessage(new Message(CONSTANTS.NEWEMAIL,CONSTANTS.NEWEMAILTEXT, message.getEmail()),clientHandlers.get(i).objectOutputStream);
+                    clientHandlers.get(i).sendMessage(new Message(CONSTANTS.NEWEMAIL,message.getEmail()));
                 }
             }
         }
-     }
-
-    public void removeClientHandler(){
-        clientHandlers.remove(this);
-        System.out.println(this.email +" had been disconnected");
     }
 
-    public void closeConn(Socket socket, ObjectInputStream objectInputStream, ObjectOutputStream objectOutputStream){
-        removeClientHandler();
-        try {
-            socket.close();
-            if(objectInputStream != null) objectInputStream.close();
-            if( objectOutputStream != null) objectOutputStream.close();
-        }catch (IOException e){
-            e.printStackTrace();
+    //TODO: Controllare se ha senso usare synchronized
+    public synchronized void closeConn(){
+        if(isConnected()){
+            clientHandlers.remove(this);
+            System.out.println("REMOVED USER WITH EMAIL: " + email);
+            try {
+                socket.close();
+                if(objectInputStream != null) objectInputStream.close();
+                if(objectOutputStream != null) objectOutputStream.close();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
         }
     }
 
-    private void sendMessage(Message msg , ObjectOutputStream objectOutputStream)  {
+    private void sendMessage(Message msg)  {
         try {
             objectOutputStream.writeObject(msg);
             objectOutputStream.flush();
         }catch (IOException e) {
-            e.printStackTrace();
+            closeConn();
         }
+    }
+
+    private boolean isConnected(){
+        if (socket != null && socket.isConnected() && !socket.isClosed())
+            return true;
+        return false;
     }
 }

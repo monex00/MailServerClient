@@ -34,9 +34,9 @@ public class StartClient extends Application {
         return emailAddress;
     }
 
-    public void setEmailAddress(String emailAddress) { emailAddress = emailAddress; }
+    public void setEmailAddress(String emailAddress) { StartClient.emailAddress = emailAddress; }
 
-    public void setImgPath(String imgPath){ imgPath = imgPath; }
+    public void setImgPath(String imgPath){ StartClient.imgPath = imgPath; }
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);

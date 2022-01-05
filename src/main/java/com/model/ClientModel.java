@@ -8,7 +8,6 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Paint;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -25,6 +24,7 @@ public class ClientModel {
     private final ListProperty<Email> inbox;
     private final ObservableList<Email> inboxContent;
     private final StringProperty emailAddress;
+    private int oldEmailsSize;
 
     //send property
     private final StringProperty receivers;
@@ -39,6 +39,8 @@ public class ClientModel {
     private final ObjectProperty<Paint> statusColor;
 
     private final ClientSocket clientSocket;
+
+    private Email toAdd;
 
     //TODO: FARE CONTROLLI
     public ClientModel(String emailAddress) {
@@ -60,9 +62,8 @@ public class ClientModel {
         statusColor = new SimpleObjectProperty<>(Paint.valueOf("#00ff00"));
 
         clientSocket = new ClientSocket();
-
+        oldEmailsSize = -1; //set to -1 to prevent doing new email popup at the start
     }
-
 
     public ListProperty<Email> inboxProperty() {
         return inbox;
@@ -93,6 +94,7 @@ public class ClientModel {
     * Delete email from the list and send to server to delete it
     */
     public void deleteEmail(Email email) {
+        //inboxContent.remove(email);
         inboxContent.remove(email);
         clientSocket.sendMessageToServer(new Message(CONSTANTS.DELETEEMAIL,email.getId() + ""));
     }
@@ -101,6 +103,9 @@ public class ClientModel {
      * Get emails from server
      */
     public void getEmails() {
+        if(oldEmailsSize != -1){
+            oldEmailsSize = inboxContent.size(); //save the old emails size to compare it with the new ones and establish if there are new emails
+        }
         inboxContent.clear(); //clear email list
         clientSocket.sendMessageToServer(new Message(CONSTANTS.GETEMAILS, ""));
     }
@@ -109,12 +114,47 @@ public class ClientModel {
      * Add emails to the list
      */
     public void setEmails(ArrayList<Email> emails){
+        if(oldEmailsSize!=-1 && oldEmailsSize != emails.size()){ //if there are new emails and the emails are not the emails loaded at the start
+            popupProperty.set(CONSTANTS.GENERICNEWEMAILTEXT);
+            popupProperty.set(null); //reset popup to trigger the listener next time
+        }
+        oldEmailsSize = 0; //after getting and setting the first emails, set oldEmailsSize to 0
+
         if(emails != null){
             for (Email email : emails) {
                 System.out.println(email.toFile());
                 inboxContent.add(email);
             }
         }
+    }
+
+    public boolean reconnect(boolean updateEmailList){
+        if(clientSocket.isConnected()){
+            return true;
+        }
+
+        try {
+            clientSocket.connectionSeq();
+
+            if(updateEmailList)
+                getEmails();
+
+            changeStatus("Online");
+            return true;
+        } catch (IOException e) {
+            changeStatus("Offline");
+            clientSocket.attemptToReconnect();
+            return false;
+        }
+    }
+
+    public void changeStatus(String status){
+        switch (status) {
+            case "Online" -> statusColor.set(Paint.valueOf(CONSTANTS.GREEN));
+            case "Offline" -> statusColor.set(Paint.valueOf(CONSTANTS.RED));
+            case "Inactive" -> statusColor.set(Paint.valueOf(CONSTANTS.YELLOW));
+        }
+        statusText.set(status);
     }
 
     /**
@@ -126,7 +166,8 @@ public class ClientModel {
         String email = this.emailAddress.getValue();
         String sub = this.subject.getValue();
         String text = this.text.getValue();
-        clientSocket.sendMessageToServer(new Message(CONSTANTS.EMAIL, "", new Email(email, r ,sub, text)));
+        toAdd = new Email(email,r,sub,text);
+        clientSocket.sendMessageToServer(new Message(CONSTANTS.EMAIL, "", toAdd));
     }
 
 
@@ -150,7 +191,7 @@ public class ClientModel {
             try {
                 connectionSeq();
             } catch (IOException e) {
-               reconnect();
+               attemptToReconnect();
             }
         }
 
@@ -171,7 +212,7 @@ public class ClientModel {
                 objectOutputStream.writeObject(new Message(CONSTANTS.MESSAGE, emailAddress.getValue(), null));
                 objectOutputStream.flush();
             } catch (IOException e) {
-                reconnect();
+                attemptToReconnect();
             }
         }
 
@@ -191,11 +232,23 @@ public class ClientModel {
                             case CONSTANTS.NEWEMAIL -> Platform.runLater( () -> {
                                 inboxContent.add(message.getEmail());
                                 popupProperty.set(CONSTANTS.NEWEMAILTEXT +  message.getEmail().getSender());
+                                popupProperty.set(null); //reset popup to trigger the listener next time
                             });
-                            case CONSTANTS.DISCONNECT -> closeConnection();
+                            case CONSTANTS.EMAILSENT -> Platform.runLater( () -> {
+                                popupProperty.set(CONSTANTS.EMAILSENTTEXT);
+                                popupProperty.set(null); //reset popup to trigger the listener next time
+                                inboxContent.add(toAdd);
+                                toAdd=null;
+                            });
+                            case CONSTANTS.DISCONNECT ->{
+                                closeConnection();
+                                Platform.runLater( () -> {
+                                    changeStatus("Inactive");
+                                });
+                            }
                         }
                     } catch(IOException | ClassNotFoundException e) {
-                        reconnect();
+                        attemptToReconnect();
                         break;
                     }
                 }
@@ -206,7 +259,7 @@ public class ClientModel {
          * a Thread that try to reconnect to the server every 5 seconds
          *  if the connection is established, it will popup a message to the user
          */
-        public void reconnect() {
+        public void attemptToReconnect() {
             closeConnection();
             new Thread(() -> {
                 while(!isConnected()){
@@ -214,16 +267,16 @@ public class ClientModel {
                         connectionSeq();
                         Platform.runLater(() -> {
                             popupProperty.set(CONSTANTS.CONNESSIONSUCCESSTEXT);
-                            statusColor.set(Paint.valueOf(CONSTANTS.GREEN));
-                            statusText.set("Online");
+                            popupProperty.set(null); //reset popup to trigger the listener next time
+                            changeStatus("Online");
                             getEmails();
                         });
                     } catch (IOException ex) {
+                        //if connection is not established when the client start or if the popup didn't show yet
                         if(popupProperty.getValue() == null || !popupProperty.getValue().equals(CONSTANTS.CONNESSIONERRORTEXT)) {
                             Platform.runLater(() -> {
                                 popupProperty.set(CONSTANTS.CONNESSIONERRORTEXT);
-                                statusColor.set(Paint.valueOf(CONSTANTS.RED));
-                                statusText.set("Offline");
+                                changeStatus("Offline");
                             });
                         }
 
@@ -238,7 +291,7 @@ public class ClientModel {
         }
 
         /**
-         * Send mesage to the server
+         * Send message to the server
          */
         public void sendMessageToServer(Message msg){
             if(isConnected() && msg != null){
@@ -246,7 +299,7 @@ public class ClientModel {
                     objectOutputStream.writeObject(msg);
                     objectOutputStream.flush();
                 } catch (IOException e){
-                    reconnect();
+                    attemptToReconnect();
                 }
             }
         }
@@ -274,7 +327,5 @@ public class ClientModel {
                 return true;
             return false;
         }
-
     }
-
 }

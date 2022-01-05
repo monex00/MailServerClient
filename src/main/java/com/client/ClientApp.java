@@ -1,6 +1,5 @@
 package com.client;
 
-import com.server.ClientHandler;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

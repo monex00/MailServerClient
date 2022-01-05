@@ -8,6 +8,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -108,11 +109,24 @@ public class ClientController {
                                     Label date = new Label();
 
                                     if(item != null){
+                                        if(item.getSender().equals(emailAddress)){
+                                            v.setStyle("-fx-background-color: rgba(74,106,166,0.63); -fx-background-radius: 5;");
+                                        }
                                         from.setText(item.getSender() + ": " + item.getSubject());
                                         date.setText(item.getDate().split("T")[0]);
+
+                                        //aligning the labels to the right
                                         date.setMaxWidth(Double.MAX_VALUE);
                                         date.setAlignment(Pos.CENTER_RIGHT);
                                     }
+                                    //set the padding for the label from to be 5 from the left
+                                    from.setPadding(new Insets(0,0,0,5));
+                                    //set the padding for the label date to be 5 from the right
+                                    date.setPadding(new Insets(0,5,0,0));
+
+                                    from.setStyle("-fx-font-size: 12;");
+                                    date.setStyle("-fx-font-size: 12;");
+
                                     v.getChildren().add(from);
                                     v.getChildren().add(date);
                                     setGraphic(v);
@@ -130,7 +144,9 @@ public class ClientController {
         model.alertProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                makePopup(t1);
+                if(t1 != null) {
+                    makePopup(t1);
+                }
             }
         });
 
@@ -152,6 +168,12 @@ public class ClientController {
      */
     @FXML
     protected void onDeleteButtonClick() {
+        if(!model.statusTextProperty().getValue().equals("Online")) {
+            if(!model.reconnect(false)){
+                makeAlert("Error", "You are offline", "You can't delete an email while you are offline", Alert.AlertType.ERROR);
+                return;
+            }
+        }
         model.deleteEmail(selectedEmail);
         updateDetailView(emptyEmail);
     }
@@ -163,12 +185,34 @@ public class ClientController {
 
     @FXML
     protected void onNewButtonClick() throws IOException {
+        if(!model.statusTextProperty().getValue().equals("Online")) {
+            if(!model.reconnect(true)){
+                makeAlert("Error", "You are offline", "You can't send an email while you are offline", Alert.AlertType.ERROR);
+                return;
+            }
+        }
+
         StartNew nm = new StartNew();
         nm.setModel(model);
         nm.start(new Stage());
     }
 
+    @FXML
+    protected void onRefreshPresssed(){
+        if(!model.reconnect(true)) {
+            makePopup("You are offline");
+        }
+    }
 
+
+    public Alert makeAlert(String title, String head, String text, Alert.AlertType type){
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(head);
+        alert.setContentText(text);
+        alert.showAndWait();
+        return alert;
+    }
 
      /**
      * Mostra la mail selezionata nella vista
@@ -201,12 +245,12 @@ public class ClientController {
         label.getStyleClass().add("popup");
         popup.getContent().add(label);
         popup.setAutoHide(true); //chiusura al click
-        popup.setX(stage.getX() + stage.getWidth()/2 - popup.getWidth()/2);
+        popup.setX(stage.getX() + (stage.getWidth()/2) - (popup.getWidth()/2));
         popup.setY(stage.getY() + stage.getHeight()/2 - popup.getHeight()/2);
 
-        if(stage.isFocused() && !popup.isShowing()){
-            popup.show(stage);
-        }
+        //if(stage.isFocused() && !popup.isShowing()){
+        popup.show(stage);
+        //}
 
         //Hide del pop-up dopo 3 secondi
         new Timeline(new KeyFrame(

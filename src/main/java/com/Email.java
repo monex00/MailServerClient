@@ -5,7 +5,6 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class Email implements Serializable {
     private long id = 0;
@@ -14,6 +13,8 @@ public class Email implements Serializable {
     private String subject = "";
     private String message ="";
     private String date = null;
+    private Boolean senderDeleted = false;
+
 
     public Email() {
         this.date = LocalDateTime.now().toString();
@@ -35,7 +36,15 @@ public class Email implements Serializable {
         this.message = message;
         this.date = date;
     }
-
+    public Email(long id , String sender, ArrayList<String> receivers, String subject, String message , String date,boolean senderDeleted) {
+        this.id = id;
+        this.sender = sender;
+        this.receivers = receivers;
+        this.subject = subject;
+        this.message = message;
+        this.date = date;
+        this.senderDeleted=senderDeleted;
+    }
     public Email(String sender, String receiver, String subject, String message) {
         this.id = new Timestamp(System.currentTimeMillis()).getTime(); //TODO: aggiungere controllo id non prensente nel file
         this.sender = sender;
@@ -94,6 +103,15 @@ public class Email implements Serializable {
         this.id = id;
     }
 
+    public Boolean getSenderDeleted() {
+        return senderDeleted;
+    }
+
+    public void setSenderDeleted(Boolean senderDeleted) {
+        this.senderDeleted = senderDeleted;
+    }
+
+    //TODO: inutile
     public String toFile() {
         String re ="";
         for (String rec:
@@ -120,52 +138,3 @@ public class Email implements Serializable {
         return email.matches(regex);
     }
 }
-
-/*
-import java.util.ArrayList;
-import java.util.List;
-
-
-
-public class Email {
-
-    private String sender;
-    private List<String> receivers;
-    private String subject;
-    private String text;
-
-    private Email() {} //rende privato il costruttore di default
-
-
-
-
-    public Email(String sender, List<String> receivers, String subject, String text) {
-        this.sender = sender;
-        this.subject = subject;
-        this.text = text;
-        this.receivers = new ArrayList<>(receivers);
-    }
-
-    public String getSender() {
-        return sender;
-    }
-
-    public List<String> getReceivers() {
-        return receivers;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-
-    @Override
-    public String toString() {
-        return String.join(" - ", List.of(this.sender,this.subject));
-    }
-}
-*/

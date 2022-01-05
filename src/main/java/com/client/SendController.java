@@ -60,21 +60,26 @@ public class SendController {
 
     @FXML
     protected void onSendButtonClick(InputEvent e) {
+        if(!model.statusTextProperty().getValue().equals("Online")) {
+            if(!model.reconnect(true)){
+                makeAlert("Error", "You are offline", "You can't send an email while you are offline", Alert.AlertType.ERROR);
+                return;
+            }
+        }
+
         String to = txtTo.getText();
         //check if the email is valid
         if(!Email.isValid(to)){
             makeAlert("Error", "Invalid email", "Please insert a valid email", Alert.AlertType.ERROR);
         }else{
-            Alert alert = makeAlert("Are you sure?", "Do you want to send this email?", "After sending you will not be able to undo this operation", Alert.AlertType.CONFIRMATION);
+            //Alert alert = makeAlert("Are you sure?", "Do you want to send this email?", "After sending you will not be able to undo this operation", Alert.AlertType.CONFIRMATION);
 
-            //if the user confirms the sending
-            if(alert.getResult() == ButtonType.OK){
-                model.receiversProperty().bind(txtTo.textProperty());
-                model.subjectProperty().bind(txtSubject.textProperty());
-                model.textProperty().bind(txtMessage.textProperty());
-                model.sendEmail();
-                stage.close();
-            }
+            model.receiversProperty().bind(txtTo.textProperty());
+            model.subjectProperty().bind(txtSubject.textProperty());
+            model.textProperty().bind(txtMessage.textProperty());
+            model.sendEmail();
+            stage.close();
+
         }
     }
 

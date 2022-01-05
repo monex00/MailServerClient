@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="600.0" prefWidth="600.0" styleClass="main-window" stylesheets="@serverStyles.css" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <BorderPane layoutX="-8.0" layoutY="7.0" prefHeight="628.0" prefWidth="628.0">
+            <bottom>
+                <Button fx:id="btn_clean_log" mnemonicParsing="false" onMouseClicked="#onCleanButtonClick" styleClass="normalButton" stylesheets="@serverStyles.css" text="CLEAN LOG" textAlignment="CENTER" BorderPane.alignment="CENTER">
+                    <font>
+                        <Font size="17.0" />
+                    </font>
+                    <BorderPane.margin>
+                        <Insets bottom="15.0" top="15.0" />
+                    </BorderPane.margin>
+                    <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                    </padding>
+                </Button>
+            </bottom>
+         <center>
+                <TextArea fx:id="txt_log" editable="false" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="546.0" prefWidth="609.0" BorderPane.alignment="CENTER" />
+         </center>
+        </BorderPane>
+    </children>
+</AnchorPane>

@@ -2,16 +2,13 @@ package com.server;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.concurrent.Semaphore;
 
 import static com.CONSTANTS.USERSFILEPATH;
 
 public class ManageUsers {
     private ArrayList<String> emailsOfUsers = null;
-    Semaphore sem = null;
-    public ManageUsers(Semaphore sem) {
+    public ManageUsers() {
         this.emailsOfUsers = new ArrayList<>();
-        this.sem = sem;
         loadEmailsOfUsers();
     }
     private void loadEmailsOfUsers() {
@@ -32,16 +29,15 @@ public class ManageUsers {
     public boolean isEmailInSystem(String email){
         return emailsOfUsers.contains(email);
     }
-    public void addEmailToFile(String email)  {
+
+    public synchronized void addEmailToFile(String email)  {
         try {
-            sem.acquire();
             FileWriter fw = new FileWriter(USERSFILEPATH, true);
             BufferedWriter bw = new BufferedWriter(fw);
             bw.newLine();
             bw.append(email);
             bw.close();
-            sem.release();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

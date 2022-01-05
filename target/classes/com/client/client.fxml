@@ -25,6 +25,13 @@
                               <Insets left="20.0" />
                            </HBox.margin>
                         </Label>
+                        <ImageView fx:id="refresh_img" fitHeight="31.0" fitWidth="33.0" onMouseClicked="#onRefreshPresssed" pickOnBounds="true" preserveRatio="true" styleClass="image_refresh">
+                           <image>
+                              <Image url="@images/refresh_icon.png" />
+                           </image>
+                           <HBox.margin>
+                              <Insets top="10.0" />
+                           </HBox.margin></ImageView>
                      </children>
                      <padding>
                         <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
@@ -68,7 +75,7 @@
                               <Label fx:id="lblFrom" styleClass="mailText" stylesheets="@styles.css" text="Label" GridPane.columnIndex="1" />
                               <Label fx:id="lblTo" styleClass="mailText" stylesheets="@styles.css" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                               <Label fx:id="lblSubject" styleClass="mailText" stylesheets="@styles.css" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                              <Label fx:id="lblStatus" text="Online" textFill="WHITE" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1">
+                              <Label fx:id="lblStatus" prefHeight="25.0" prefWidth="83.0" text="Online" textFill="WHITE" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1">
                                  <graphic>
                                     <Circle fx:id="cleStatus" fill="#1aff00" radius="6.0" stroke="BLACK" strokeType="INSIDE" />
                                  </graphic></Label>

@@ -1,6 +1,5 @@
-
-.main{
-    -fx-background-image: url(images/back01.png);
+.main-window{
+    -fx-background-color :  #222832;
     -fx-background-position: center center;
     -fx-background-size: cover;
 }
@@ -15,21 +14,10 @@
     -fx-opacity: 0.5;
 }
 
-.image_refresh{
-    -fx-opacity: 0.5;
-}
-
-.image_refresh:hover{
-    -fx-opacity: 1;
-}
-
-
 .button{
     -fx-background-color : #666666;
-    -fx-background-radius: 12px;
+    -fx-background-radius: 15px;
 }
-
-
 
 .mailBackgroundPrimary{
     -fx-background-color :  #222832;
@@ -40,31 +28,24 @@
     -fx-font-size: 16px;
 }
 
-.split-pane > .split-pane-divider {
-    -fx-padding: 0 0.30em 0 0.30em;
-    -fx-background-color :  #222832;
-}
-
 .list-view {
     -fx-control-inner-background: #393E46 ;
     -fx-control-inner-background-alt: derive(-fx-control-inner-background, 60%);
     -fx-text-fill: #EEEEEE;
-    -fx-background-radius: 5px;
 }
 
 .text-area {
-    -fx-control-inner-background: #393E46;
+    -fx-control-inner-background: #393E46 ;
     -fx-text-fill: #EEEEEE;
 }
 
 .mailButton{
-    -fx-label-padding: 0 15 0 15;
+    -fx-label-padding: 8px;
     -fx-margin: 10px;
-    -fx-font-size: 17px;
+    -fx-font-size: 16px;
 }
 
 .normalButton{
-
     -fx-background-color :  #EEEEEE;
     -fx-text-fill: #222832;
 }
@@ -72,15 +53,4 @@
 .deleteButton{
     -fx-background-color :   #802944;
     -fx-text-fill:  #EEEEEE;
-}
-
-.popup {
-    -fx-background-color: #2e5573;
-    -fx-background-radius: 12px;
-    -fx-padding: 10;
-    -fx-border-color: #000000;
-    -fx-border-width: 2;
-    -fx-font-size: 16;
-    -fx-text-fill:  #EEEEEE;
-    -fx-border-radius: 12px;
 }
