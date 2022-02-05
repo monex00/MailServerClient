@@ -1,5 +1,6 @@
-package com.client;
+package com.client.views;
 
+import com.client.controllers.LoginController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

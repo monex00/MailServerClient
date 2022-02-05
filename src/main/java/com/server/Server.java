@@ -1,27 +1,27 @@
 package com.server;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import com.CONSTANTS;
+import com.server.model.ServerModel;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private ServerSocket serverSocket = null;
-    private StringProperty logProperty;
+    private final ServerModel serverModel;
 
     ManageUsers manageUsers = null;
     ManageEmails manageEmails = null;
 
-    public Server(ServerSocket serverSocket) {
+    public Server(ServerSocket serverSocket , ServerModel serverModel) {
         this.serverSocket = serverSocket;
         manageUsers = new ManageUsers();
-        manageEmails = new ManageEmails(this.manageUsers);
-        logProperty = new SimpleStringProperty();
-        logProperty.set("");
+        manageEmails = new ManageEmails(this.manageUsers, serverModel);
+        this.serverModel = serverModel;
     }
-    public StringProperty logProperty() { return logProperty; }
     public ServerSocket getServerSocket() {
         return serverSocket;
     }
@@ -31,13 +31,13 @@ public class Server {
     }
     public void startServer() {
         new Thread(() -> {
+            ExecutorService executor = Executors.newFixedThreadPool(CONSTANTS.MAXTHREADS);
             try {
                 while (!serverSocket.isClosed()){
                     Socket socket = this.serverSocket.accept();
-                    logProperty.set(logProperty.get() + "New Client connected to Server\n");
-                    ClientHandler clientHandler = new ClientHandler(socket, manageUsers, manageEmails, logProperty);
-                    Thread thread = new Thread(clientHandler); //TODO: utilizzare thread pool
-                    thread.start();
+                    serverModel.appendLogText("New Client connected to Server");
+                    ClientHandler clientHandler = new ClientHandler(socket, manageUsers, manageEmails, serverModel);
+                    executor.execute(clientHandler);
                 }
             }catch (IOException e){
                 System.exit(0);
@@ -45,7 +45,16 @@ public class Server {
         }).start();
 
     }
-    public void closeServerSocket(){
+    public void closeServerSocket() {
+        this.manageEmails.addEmailToFile();
+        synchronized (ClientHandler.clientHandlers){
+            System.out.println("Closing Server");
+            for (ClientHandler clientHandler : ClientHandler.clientHandlers) {
+                clientHandler.closeSock();
+            }
+        }
+
+
         try {
             if(serverSocket != null){
                 serverSocket.close();

@@ -1,25 +1,16 @@
-package com.server;
+package com.server.controller;
 
 import com.CONSTANTS;
-import com.Email;
 import com.server.Server;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
+import com.server.model.ServerModel;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
-import com.model.*;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.stage.WindowEvent;
-
-
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.ArrayList;
+
 
 /**
  * Classe Controller
@@ -32,6 +23,7 @@ public class ServerController {
 
 
     private Server server;
+    private ServerModel serverModel;
     private Stage stage;
 
     public Server getServer() {
@@ -48,15 +40,16 @@ public class ServerController {
 
     @FXML
     public void initialize(){
+        serverModel = new ServerModel();
         try {
             ServerSocket serverSocket = new ServerSocket(CONSTANTS.SERVERPORT);
-            server = new Server(serverSocket);
+            server = new Server(serverSocket, serverModel);
             server.startServer();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-        txt_log.textProperty().bind(server.logProperty());
+        txt_log.textProperty().bind(serverModel.logProperty());
+
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
@@ -71,20 +64,6 @@ public class ServerController {
     @FXML
     protected void onCleanButtonClick() {
         System.out.println("clean");
-        server.logProperty().set("");
+        serverModel.clearLogText();
     }
-
-
-    public void makeAlert(String title, String head, String text){
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(head);
-        alert.setContentText(text);
-        alert.showAndWait().ifPresent(rs -> {
-            if (rs == ButtonType.OK) {
-                System.out.println("Pressed OK.");
-            }
-        });
-    }
-
 }

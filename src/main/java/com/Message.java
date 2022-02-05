@@ -78,7 +78,5 @@ public class Message implements Serializable {
                     ", message='" + message + '\'' +
                     '}';
         }
-
-
     }
 }

@@ -1,5 +1,6 @@
-package com.client;
+package com.client.views;
 
+import com.client.controllers.ClientController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -27,6 +28,7 @@ public class StartClient extends Application {
         Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle(emailAddress);
         stage.setScene(scene);
+        stage.setResizable(false);
         stage.show();
     }
 

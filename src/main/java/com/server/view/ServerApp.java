@@ -1,6 +1,6 @@
-package com.server;
+package com.server.view;
 
-import com.client.ClientApp;
+import com.server.controller.ServerController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -12,11 +12,10 @@ import java.net.URL;
 
 public class ServerApp extends Application {
 
-    private static Server server;
     @Override
     public void start(Stage stage) throws IOException {
 
-        URL serverUrl = ClientApp.class.getResource("serverGUI.fxml");
+        URL serverUrl = ServerApp.class.getResource("serverGUI.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(serverUrl);
 
         ServerController controller = new ServerController(stage);

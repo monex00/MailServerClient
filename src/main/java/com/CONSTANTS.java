@@ -20,7 +20,10 @@ public class CONSTANTS {
     //server constants
     public static final String SERVERIP = "127.0.0.1";
     public static final int SERVERPORT = 5555;
-    public static final int MAXSOCKETS = 15;
+    public static final int MAXSOCKETS = 10;
+    public static final int MAXTHREADS = 10;
+    public static final int SECONDTOTIMEOUT = 30;
+    public static final int SECONDTOWRITEEMAILS = 10;
 
     //user constants
     public static final String NEWEMAILTEXT = "Hai ricevuto una nuova mail da: ";

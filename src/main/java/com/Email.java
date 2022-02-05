@@ -14,6 +14,7 @@ public class Email implements Serializable {
     private String message ="";
     private String date = null;
     private Boolean senderDeleted = false;
+    private ArrayList<String> receiversDeleted = new ArrayList<>();
 
 
     public Email() {
@@ -45,8 +46,9 @@ public class Email implements Serializable {
         this.date = date;
         this.senderDeleted=senderDeleted;
     }
+
     public Email(String sender, String receiver, String subject, String message) {
-        this.id = new Timestamp(System.currentTimeMillis()).getTime(); //TODO: aggiungere controllo id non prensente nel file
+        this.id = new Timestamp(System.currentTimeMillis()).getTime();
         this.sender = sender;
         this.receivers = new ArrayList<>();
         this.receivers.add(receiver);
@@ -103,7 +105,7 @@ public class Email implements Serializable {
         this.id = id;
     }
 
-    public Boolean getSenderDeleted() {
+    public Boolean isSenderDeleted() {
         return senderDeleted;
     }
 
@@ -111,7 +113,16 @@ public class Email implements Serializable {
         this.senderDeleted = senderDeleted;
     }
 
-    //TODO: inutile
+    public void setReceiverDeleted(String receiver, boolean deleted) {
+        if(deleted)
+            this.receiversDeleted.add(receiver);
+        else
+            this.receiversDeleted.remove(receiver);
+    }
+    public boolean isReceiverDeleted(String receiver){
+        return receiversDeleted.contains(receiver);
+    }
+
     public String toFile() {
         String re ="";
         for (String rec:
@@ -127,14 +138,19 @@ public class Email implements Serializable {
         String re ="";
         for (String rec:
                 this.receivers) {
-            re+=rec+"-";
+            re += rec+"-";
         }
 
         return this.sender + ": " + this.subject.toUpperCase() + "\n" + this.message.substring(0, this.message.length() - 3) + " " + this.date.split("T")[0];
     }
 
-    public static boolean isValid(String email) {
+    public static boolean isValid(String to) {
         String regex = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
-        return email.matches(regex);
+        String[] emails = to.split(";");
+        for (String email : emails) {
+            if(!email.matches(regex))
+                return false;
+        }
+        return true;
     }
 }

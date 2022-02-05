@@ -15,20 +15,30 @@
     -fx-opacity: 0.5;
 }
 
-.image_refresh{
+.client_image{
     -fx-opacity: 0.5;
 }
 
-.image_refresh:hover{
+.client_image:hover{
     -fx-opacity: 1;
 }
 
+.buttonSchedule{
+    -fx-background-color : #393E46;
+    -fx-background-radius: 0px;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+}
 
 .button{
     -fx-background-color : #666666;
-    -fx-background-radius: 12px;
+    -fx-background-radius: 10px;
+    -fx-opacity: 0.6;
 }
 
+.button:hover{
+    -fx-opacity: 1;
+}
 
 
 .mailBackgroundPrimary{
@@ -50,6 +60,12 @@
     -fx-control-inner-background-alt: derive(-fx-control-inner-background, 60%);
     -fx-text-fill: #EEEEEE;
     -fx-background-radius: 5px;
+}
+
+/* pseudo Classe dei text input */
+.text-input:error {
+    -fx-text-fill: white;
+    -fx-background-color: #961010;
 }
 
 .text-area {
